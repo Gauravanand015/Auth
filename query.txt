@@ -1,0 +1,86 @@
+db.purchases.createIndex({user_id:1})
+'user_id_1'
+db.purchases.getIndexes()
+[
+  { v: 2, key: { _id: 1 }, name: '_id_' },
+  { v: 2, key: { user_id: 1 }, name: 'user_id_1' }
+]
+
+
+// combinig collections
+
+
+db.users.aggregate([{$lookup:{from:"purchases",localField:"_id",foreignField:"user_id",as:"purchases"}},{$project:{"name":1,"age":1,"purchases.item":1,"purchases.price":1}},{$out:"TotalPurchases"}])
+db.totalPurchases.find()
+db.TotalPurchases.find()
+{
+  _id: 1,
+  name: 'Alice',
+  age: 25,
+  purchases: [
+    {
+      item: 'book',
+      price: 10
+    },
+    {
+      item: 'pen',
+      price: 5
+    }
+  ]
+}
+{
+  _id: 2,
+  name: 'Bob',
+  age: 30,
+  purchases: [
+    {
+      item: 'book',
+      price: 15
+    },
+    {
+      item: 'pen',
+      price: 6
+    }
+  ]
+}
+{
+  _id: 3,
+  name: 'Charlie',
+  age: 35,
+  purchases: [
+    {
+      item: 'book',
+      price: 20
+    },
+    {
+      item: 'pen',
+      price: 7
+    }
+  ]
+}
+
+db.TotalPurchases.aggregate([{$group:{_id:{_id:"$_id",name:"$name","total_purchases":{$size:"$purchases"},"total_spending":{$sum:"$purchases.price"}}}},{$sort:{_id:-1}}])
+{
+  _id: {
+    _id: 3,
+    name: 'Charlie',
+    total_purchases: 2,
+    total_spending: 27
+  }
+}
+{
+  _id: {
+    _id: 2,
+    name: 'Bob',
+    total_purchases: 2,
+    total_spending: 21
+  }
+}
+{
+  _id: {
+    _id: 1,
+    name: 'Alice',
+    total_purchases: 2,
+    total_spending: 15
+  }
+}
